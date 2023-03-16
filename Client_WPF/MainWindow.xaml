@@ -5,8 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client_WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Мессенджер - Клиент. IP: (local)" Height="450" Width="800" Initialized="Window_Initialized" Loaded="Window_Loaded">
     <Grid>
+        <TextBox x:Name="TB_Message" HorizontalAlignment="Left" Margin="50,406,0,0" TextWrapping="Wrap" Text="Введите сообщение.. " VerticalAlignment="Top" Width="640" IsEnabled="False"/>
+        <Button x:Name="B_Message_Send" Content="Отправить" HorizontalAlignment="Left" Margin="695,405,0,0" VerticalAlignment="Top" Width="95" IsEnabled="False"/>
+        <ComboBox x:Name="CB_Message_Add" HorizontalAlignment="Left" Margin="10,404,0,0" VerticalAlignment="Top" Width="35" IsEnabled="False">
+            <ComboBoxItem Content="Файл (*.*)"/>
+            <ComboBoxItem Content="Изображения (*.bmp, *.jpg)"/>
+            <ComboBoxItem Content="Документы (*.pdf)"/>
+        </ComboBox>
+        <ListBox x:Name="LB_Main_Messages" Height="NaN" Margin="225,10,10,35" Width="NaN"/>
+        <ListBox x:Name="LB_Main_Chats" Margin="10,10,580,35" Width="NaN" Height="NaN"/>
 
     </Grid>
 </Window>
