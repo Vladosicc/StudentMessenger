@@ -42,10 +42,10 @@ namespace Server.Models
         public string Email { get; set; } = string.Empty;
 
         /// <summary>
-        /// Эл. почта
+        /// Статус
         /// </summary>
         [Required]
-        [Display(Name = "Эл. почта")]
+        [Display(Name = "Статус")]
         public UserStatus Status { get; set; }
     }
 

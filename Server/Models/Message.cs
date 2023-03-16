@@ -43,6 +43,13 @@ namespace Server.Models
         [Display(Name = "Ссылка на файл/ресурс")]
         public string Resource { get; set; }
 
+        /// <summary>
+        /// Дата создания
+        /// </summary>
+        [Required]
+        [Display(Name = "Дата создания")]
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
         //Поиск по внешним ключам
         
         /// <summary>

@@ -13,11 +13,11 @@ namespace Server.DbContexts
         /// <summary>
         /// Пользователи
         /// </summary>
-        DbSet<User> Users { get; set; }
+        public DbSet<User> Users { get; set; }
 
         /// <summary>
         /// Сообщения
         /// </summary>
-        DbSet<Message> Messages { get; set; }
+        public DbSet<Message> Messages { get; set; }
     }
 }
