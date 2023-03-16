@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Server.Services;
+using System.Text.Json.Serialization;
 
 namespace Server
 {
@@ -37,9 +38,10 @@ namespace Server
             services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-            
+
             //Добавление manager'ов
-            //services.AddTransient<IManager, Manager>();
+            services.AddTransient<IMessageService, MessageService>();
+            services.AddTransient<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +59,8 @@ namespace Server
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseWebSockets();
 
             app.UseRouting();
 
