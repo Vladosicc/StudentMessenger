@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Client_WPF
+namespace Client_WPF.Windows
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -31,22 +31,81 @@ namespace Client_WPF
 
         private void Window_Initialized(object sender, EventArgs e)
         {
+            Network.OnNetworkStatusChanged += UI_NetStatusChanged;
+        }
 
+        private void UI_NetStatusChanged(ServerStatus status, IPNetData data)
+        {
+            UI_ChangeStatus(status, data);
+        }
+
+        private void UI_ChangeStatus(ServerStatus status, IPNetData data)
+        {
+            if (data != null)
+            {
+                switch (status)
+                {
+                    case ServerStatus.Connected:
+                        {
+                            Title = "Мессенджер - Клиент (подключено). IP: " + data.ToString();
+                            break;
+                        }
+                    case ServerStatus.TryToConnect:
+                        {
+                            Title = "Мессенджер - Клиент (попытка подключения). IP: " + data.ToString();
+                            break;
+                        }
+                    case ServerStatus.Disconnected:
+                        {
+                            Title = "Мессенджер - Клиент (отключён). IP: " + data.ToString();
+                            break;
+                        }
+                    case ServerStatus.Aborted:
+                        {
+                            Title = "Мессенджер - Клиент (оборвано). IP: " + data.ToString();
+                            break;
+                        }
+                }
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
+            if (Network.IsEmpty)
+            {
+                Window_IPEntering w_Ip = new Window_IPEntering();
+                w_Ip.ShowDialog();
+                if (w_Ip.DialogResult == true)
+                {
+                    try
+                    {
+                        Network = AppNetwork.OpenConnectionTo(w_Ip.IpPort);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка" + ex.Message, "Ошибка.");
+                    }
+                }
+            }
         }
+
     }
 
-    public class NetworkData
+    public class IPNetData
     {
-        public string IP { get; set; } 
+        public string IP { get; set; } = null;
 
-        public ushort Port { get; set; } 
+        public ushort? Port { get; set; } = null;
 
-        public NetworkData (string ipPort)
+        public bool IsEmpty 
+        { 
+            get
+            {
+                return IP != null;
+            }
+        }
+
+        public IPNetData (string ipPort)
         {
             var val = ipPort.Split(':');
             if (val.Length == 2)
@@ -77,43 +136,58 @@ namespace Client_WPF
                 throw new Exception("Комбинация [IP:Port] неверна..");
         }
 
-        public NetworkData (string ip, ushort port)
+        public IPNetData (string ip, ushort port)
         {
             IP = ip;    
             Port = port;
+        }
+
+        public override string ToString()
+        {
+            return IP + ":" + Port;
         }
 
     }
 
     public class AppNetwork
     {
-        public delegate void NetworkStatusChanged(ServerStatus status, NetworkData data);
+        public delegate void NetworkStatusChanged(ServerStatus status, IPNetData data);
 
         public event NetworkStatusChanged OnNetworkStatusChanged;
 
         private TcpClient SocketClient { get; set; } = new TcpClient();
 
-        public NetworkData MainData { get; set; }
+        public IPNetData MainData { get; set; }
 
         public AppNetwork()
         {
                 
         }
 
-        private AppNetwork(NetworkData data)
+        public bool IsEmpty 
+        { 
+            get
+            {
+                if (MainData == null)
+                    return true;
+                return MainData.IsEmpty;
+            } 
+        }
+
+        private AppNetwork(IPNetData data)
         {
             MainData = data;
         }
 
         private AppNetwork(string ipPort)
         {
-            MainData = new NetworkData(ipPort);
+            MainData = new IPNetData(ipPort);
             OpenSocketWithData();
         }
 
         private AppNetwork(string ip, ushort port)
         {
-            MainData = new NetworkData(ip, port);
+            MainData = new IPNetData(ip, port);
             OpenSocketWithData();
         }
 
@@ -122,7 +196,7 @@ namespace Client_WPF
             if (IsConnected.HasValue && !IsConnected.Value)
             {
                 OnNetworkStatusChanged?.Invoke(ServerStatus.TryToConnect, MainData);
-                SocketClient.BeginConnect(IPAddress.Parse(MainData.IP), MainData.Port, new AsyncCallback(ConnectCallback), null);
+                SocketClient.BeginConnect(IPAddress.Parse(MainData.IP), (int) MainData.Port, new AsyncCallback(ConnectCallback), null);
             }
         }
 
@@ -132,7 +206,7 @@ namespace Client_WPF
             OnNetworkStatusChanged?.Invoke(ServerStatus.Connected, MainData);
         }
 
-        public static AppNetwork OpenConnectionTo(NetworkData data)
+        public static AppNetwork OpenConnectionTo(IPNetData data)
         {
             return new AppNetwork(data);
         }
