@@ -4,7 +4,7 @@ using Server.Models;
 
 namespace Server.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly MessangerDataContext _dbContext;
 

@@ -60,6 +60,8 @@ namespace Server
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseWebSockets();
+
             app.UseRouting();
 
             app.UseAuthorization();
