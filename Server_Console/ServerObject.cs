@@ -49,6 +49,16 @@ namespace Server_Console
                 Disconnect();
             }
         }
+        // трансляция сообщения клиенту
+        protected internal async Task UnicastMessageAsync(string message, string senderId, string receiverId)
+        {
+            var Receiver = clients.FirstOrDefault(i => i.Id == receiverId);
+            if (Receiver != null)
+            {
+                await Receiver.Writer.WriteLineAsync(message); //передача данных
+                await Receiver.Writer.FlushAsync();
+            }
+        }
 
         // трансляция сообщения подключенным клиентам
         protected internal async Task BroadcastMessageAsync(string message, string id)
