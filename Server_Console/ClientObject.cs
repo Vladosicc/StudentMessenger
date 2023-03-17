@@ -10,22 +10,14 @@ namespace Server_Console
     internal class ClientObject
     {
         protected internal string Id { get; } = Guid.NewGuid().ToString();
-        protected internal StreamWriter Writer { get; }
-        protected internal StreamReader Reader { get; }
 
-        TcpClient client;
+        Socket client;
         ServerObject server; // объект сервера
 
-        public ClientObject(TcpClient tcpClient, ServerObject serverObject)
+        public ClientObject(Socket tcpClient, ServerObject serverObject)
         {
             client = tcpClient;
             server = serverObject;
-            // получаем NetworkStream для взаимодействия с сервером
-            var stream = client.GetStream();
-            // создаем StreamReader для чтения данных
-            Reader = new StreamReader(stream);
-            // создаем StreamWriter для отправки данных
-            Writer = new StreamWriter(stream);
         }
 
         public async Task ProcessAsync()
@@ -71,8 +63,6 @@ namespace Server_Console
         // закрытие подключения
         protected internal void Close()
         {
-            Writer.Close();
-            Reader.Close();
             client.Close();
         }
     }
