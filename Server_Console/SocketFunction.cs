@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 
-namespace safeboard_2_service.MySocket
+namespace Server_Console
 {
     /// <summary>
     /// Вспомогательный класс для облегчения работы с сокетом
