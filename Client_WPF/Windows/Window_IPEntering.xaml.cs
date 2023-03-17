@@ -22,6 +22,8 @@ namespace Client_WPF.Windows
         
         public string IpPort { get; set; }
 
+        public string UserName { get; set; } 
+
         public Window_IPEntering()
         {
             InitializeComponent();
@@ -29,6 +31,8 @@ namespace Client_WPF.Windows
 
         private void B_EnterIPData_Click(object sender, RoutedEventArgs e)
         {
+            IpPort = TB_ServerIP.Text;
+            UserName = TB_UserName.Text;
             DialogResult = true;
         }
     }

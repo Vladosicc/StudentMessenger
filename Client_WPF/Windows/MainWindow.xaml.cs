@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -27,11 +28,12 @@ namespace Client_WPF.Windows
         public MainWindow()
         {
             InitializeComponent();
+            Network.OnNetworkStatusChanged += UI_NetStatusChanged;
         }
 
         private void Window_Initialized(object sender, EventArgs e)
         {
-            Network.OnNetworkStatusChanged += UI_NetStatusChanged;
+            
         }
 
         private void UI_NetStatusChanged(ServerStatus status, IPNetData data)
@@ -79,7 +81,7 @@ namespace Client_WPF.Windows
                 {
                     try
                     {
-                        Network = AppNetwork.OpenConnectionTo(w_Ip.IpPort);
+                        Network = AppNetwork.OpenConnectionTo(w_Ip.IpPort, w_Ip.UserName);
                     }
                     catch (Exception ex)
                     {
@@ -151,6 +153,8 @@ namespace Client_WPF.Windows
 
     public class AppNetwork
     {
+        const int StreamCapacity = 1024;
+
         public delegate void NetworkStatusChanged(ServerStatus status, IPNetData data);
 
         public event NetworkStatusChanged OnNetworkStatusChanged;
@@ -164,6 +168,8 @@ namespace Client_WPF.Windows
                 
         }
 
+        MemoryStream MemStream = null;
+
         public bool IsEmpty 
         { 
             get
@@ -174,46 +180,69 @@ namespace Client_WPF.Windows
             } 
         }
 
-        private AppNetwork(IPNetData data)
+        private AppNetwork(IPNetData data, string userName)
         {
             MainData = data;
         }
 
-        private AppNetwork(string ipPort)
+        private AppNetwork(string ipPort, string userName)
         {
             MainData = new IPNetData(ipPort);
-            OpenSocketWithData();
+            OpenSocketWithData(userName);
         }
 
-        private AppNetwork(string ip, ushort port)
+        private AppNetwork(string ip, ushort port, string userName)
         {
             MainData = new IPNetData(ip, port);
-            OpenSocketWithData();
+            OpenSocketWithData(userName);
         }
 
-        private void OpenSocketWithData()
+        private async Task OpenSocketWithData(string userName)
         { 
             if (IsConnected.HasValue && !IsConnected.Value)
             {
-                OnNetworkStatusChanged?.Invoke(ServerStatus.TryToConnect, MainData);
-                SocketClient.BeginConnect(IPAddress.Parse(MainData.IP), (int) MainData.Port, new AsyncCallback(ConnectCallback), null);
+                //OnNetworkStatusChanged?.Invoke(ServerStatus.TryToConnect, MainData);
+                SocketClient.BeginConnect(IPAddress.Parse(MainData.IP), (int) MainData.Port, new AsyncCallback(ConnectCallback), userName);
             }
         }
 
-        private void ConnectCallback(IAsyncResult ar)
+        private async void ConnectCallback(IAsyncResult ar)
         {
-            SocketClient.EndConnect(ar);
             OnNetworkStatusChanged?.Invoke(ServerStatus.Connected, MainData);
+            SocketClient.EndConnect(ar);
+            MemStream = new MemoryStream(new byte[StreamCapacity], 0, StreamCapacity, true, true);
+            StartReceive(ar);
         }
 
-        public static AppNetwork OpenConnectionTo(IPNetData data)
+        private void StartReceive(IAsyncResult ar)
         {
-            return new AppNetwork(data);
+            SocketClient.Client.BeginReceive(MemStream.GetBuffer(), 0, MemStream.GetBuffer().Length, SocketFlags.None, out SocketError sockErr, new AsyncCallback(ReceivedData), ar.AsyncState);
         }
 
-        public static AppNetwork OpenConnectionTo(string ipPort)
+        private void ReceivedData(IAsyncResult ar)
         {
-            return new AppNetwork(ipPort);
+            SocketError errorcode = SocketError.Success;
+            TcpClient connect = (TcpClient)ar.AsyncState;
+            int bytesRead = connect.Client.EndReceive(ar, out errorcode);
+            if (bytesRead > 0)
+            {
+                BinaryReader br = new BinaryReader(MemStream);
+                int code = br.ReadInt32();
+                ParseMessage(code, br, MemStream);
+                ClearPlayerStream();
+                StartReceive(ar);
+            }
+
+        }
+
+        public static AppNetwork OpenConnectionTo(IPNetData data, string userName)
+        {
+            return new AppNetwork(data, userName);
+        }
+
+        public static AppNetwork OpenConnectionTo(string ipPort, string userName)
+        {
+            return new AppNetwork(ipPort, userName);
         }
 
         public bool? IsConnected
