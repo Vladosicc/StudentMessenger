@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client_WPF", "Client_WPF\Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{12FDD438-81CA-45A3-9A2E-40449F5B9E3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server_Console", "Server_Console\Server_Console.csproj", "{BE968FDB-2698-4272-9C8D-A1F0EF894FEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server_Console", "Server_Console\Server_Console.csproj", "{BE968FDB-2698-4272-9C8D-A1F0EF894FEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetDataLibrary", "NetDataLibrary\NetDataLibrary.csproj", "{74167E9A-6D4F-4E56-98F3-2CA82FCCDB83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{BE968FDB-2698-4272-9C8D-A1F0EF894FEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE968FDB-2698-4272-9C8D-A1F0EF894FEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE968FDB-2698-4272-9C8D-A1F0EF894FEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74167E9A-6D4F-4E56-98F3-2CA82FCCDB83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74167E9A-6D4F-4E56-98F3-2CA82FCCDB83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74167E9A-6D4F-4E56-98F3-2CA82FCCDB83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74167E9A-6D4F-4E56-98F3-2CA82FCCDB83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

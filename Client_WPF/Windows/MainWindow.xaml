@@ -5,17 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client_WPF"
         mc:Ignorable="d"
-        Title="Мессенджер - Клиент. IP: (local)" Height="450" Width="800" Initialized="Window_Initialized" Loaded="Window_Loaded">
-    <Grid>
-        <TextBox x:Name="TB_Message" HorizontalAlignment="Left" Margin="50,406,0,0" TextWrapping="Wrap" Text="Введите сообщение.. " VerticalAlignment="Top" Width="640" IsEnabled="False"/>
-        <Button x:Name="B_Message_Send" Content="Отправить" HorizontalAlignment="Left" Margin="695,405,0,0" VerticalAlignment="Top" Width="95" IsEnabled="False"/>
-        <ComboBox x:Name="CB_Message_Add" HorizontalAlignment="Left" Margin="10,404,0,0" VerticalAlignment="Top" Width="35" IsEnabled="False">
+        Title="Мессенджер - Клиент. IP: (local)" Height="450" Width="800" Initialized="Window_Initialized" Loaded="Window_Loaded" ResizeMode="NoResize" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Disabled" WindowStyle="ThreeDBorderWindow">
+    <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <TextBox x:Name="TB_Message" HorizontalAlignment="Left" Margin="50,0,0,10" TextWrapping="Wrap" Text="Введите сообщение.. " VerticalAlignment="Bottom" Width="640" IsEnabled="False"/>
+        <Button x:Name="B_Message_Send" Content="Отправить" HorizontalAlignment="Right" Margin="0,0,10,8" VerticalAlignment="Bottom" Width="95" IsEnabled="False"/>
+        <ComboBox x:Name="CB_Message_Add" HorizontalAlignment="Left" Margin="10,0,0,8" VerticalAlignment="Bottom" Width="35" IsEnabled="False">
             <ComboBoxItem Content="Файл (*.*)"/>
             <ComboBoxItem Content="Изображения (*.bmp, *.jpg)"/>
             <ComboBoxItem Content="Документы (*.pdf)"/>
         </ComboBox>
-        <ListBox x:Name="LB_Main_Messages" Height="NaN" Margin="225,10,10,35" Width="NaN"/>
-        <ListBox x:Name="LB_Main_Chats" Margin="10,10,580,35" Width="NaN" Height="NaN"/>
+        <ListBox x:Name="LB_Main_Messages" Height="NaN" Margin="225,28,10,35" Width="NaN"/>
+        <ListBox x:Name="LB_Main_Chats" Margin="10,60,580,35" Width="NaN" Height="NaN" SelectionChanged="LB_Main_Chats_SelectionChanged"/>
+        <Menu x:Name="M_MenuHome" HorizontalAlignment="Center" VerticalAlignment="Top" Height="22.5" Width="800">
+            <MenuItem x:Name="MI_Home_Server" Header="Сервер">
+                <MenuItem x:Name="MI_Server_Disconnect" Header="Отключиться" Click="MI_Server_Disconnect_Click"/>
+                <MenuItem x:Name="MI_Server_ChangeServ" Header="Сменить сервер" Click="MI_Server_ChangeServ_Click"/>
+            </MenuItem>
+        </Menu>
+        <Label x:Name="label" Content="Список чатов: " HorizontalAlignment="Left" Margin="10,29,0,0" VerticalAlignment="Top" Height="26"/>
+        <Label x:Name="label1" Content="Чат: " HorizontalAlignment="Left" Margin="185,29,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
