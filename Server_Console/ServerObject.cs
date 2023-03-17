@@ -6,12 +6,14 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Net.Http;
 
 namespace Server_Console
 {
     internal class ServerObject
     {
-        TcpListener tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8888); // сервер для прослушивания
+        IPEndPoint ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8005);
+        Socket listener = new Socket(IPAddress.Any.AddressFamily, SocketType.Stream, ProtocolType.Tcp); // сервер для прослушивания
         List<ClientObject> clients = new List<ClientObject>(); // все подключения
 
         protected internal void RemoveConnection(string id)
@@ -28,16 +30,26 @@ namespace Server_Console
         {
             try
             {
-                tcpListener.Start();
+                //Слушаем клиента
+                listener.Bind(ip);
+                listener.Listen(0);
                 Console.WriteLine("Сервер запущен. Ожидание подключений...");
 
                 while (true)
                 {
-                    TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
-
-                    ClientObject clientObject = new ClientObject(tcpClient, this);
-                    clients.Add(clientObject);
-                    Task.Run(clientObject.ProcessAsync);
+                    Socket s = listener.Accept();
+                    try
+                    {
+                        ClientObject clientObject = new ClientObject(s, this);
+                        clients.Add(clientObject);
+                        Task.Run(clientObject.ProcessAsync);
+                        //Получили запрос
+                        ReciveMessage(s);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
                 }
             }
             catch (Exception ex)
@@ -49,29 +61,43 @@ namespace Server_Console
                 Disconnect();
             }
         }
-        // трансляция сообщения клиенту
-        protected internal async Task UnicastMessageAsync(string message, string senderId, string receiverId)
+
+        static async Task ReciveMessage(Socket s)
         {
-            var Receiver = clients.FirstOrDefault(i => i.Id == receiverId);
-            if (Receiver != null)
+            await Task.Run(async () =>
             {
-                await Receiver.Writer.WriteLineAsync(message); //передача данных
-                await Receiver.Writer.FlushAsync();
+                try
+                {
+                    string request = SocketFunction.GetFullStringUnicode(s);
+                    Console.WriteLine(DateTime.Now.ToShortTimeString() + " Command: " + request);
+                    await DoTasks(s, request);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            });
+        }
+
+        static async Task DoTasks(Socket s, string Request)
+        {
+            byte[] TaskEndingSuccessfully = BitConverter.GetBytes(0);
+            byte[] TaskError = BitConverter.GetBytes(-1);
+
+            TypeOperation typeOperation = TypeOperation.undef;
+
+            switch (typeOperation)
+            {
+                default:
+                    {
+                        s.Send(TaskError);
+                        s.Send(Encoding.Unicode.GetBytes("Undefined command"));
+                        return;
+                    }
+
             }
         }
 
-        // трансляция сообщения подключенным клиентам
-        protected internal async Task BroadcastMessageAsync(string message, string id)
-        {
-            foreach (var client in clients)
-            {
-                if (client.Id != id) // если id клиента не равно id отправителя
-                {
-                    await client.Writer.WriteLineAsync(message); //передача данных
-                    await client.Writer.FlushAsync();
-                }
-            }
-        }
         // отключение всех клиентов
         protected internal void Disconnect()
         {
@@ -79,7 +105,7 @@ namespace Server_Console
             {
                 client.Close(); //отключение клиента
             }
-            tcpListener.Stop(); //остановка сервера
+            listener.Close(); //остановка сервера
         }
     }
 }
