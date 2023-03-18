@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Server_Console
+namespace NetDataLibrary.Sockets
 {
     /// <summary>
     /// Вспомогательный класс для облегчения работы с сокетом
@@ -118,6 +118,12 @@ namespace Server_Console
             while (s.Available > 0);
 
             return builder.ToString();
+        }
+
+        public static byte[] FromUnicodeToBytes(string request)
+        {
+            byte[] bytes = Encoding.Unicode.GetBytes(request);
+            return bytes;
         }
     }
 }

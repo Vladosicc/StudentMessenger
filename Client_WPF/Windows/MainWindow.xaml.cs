@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,10 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using Client_WPF.Network;
 using NetDataLibrary;
-
-using Newtonsoft.Json;
+using NetDataLibrary.NetworkStatuses;
 
 namespace Client_WPF.Windows
 {
@@ -120,7 +114,7 @@ namespace Client_WPF.Windows
             {
                 try
                 {
-                    ClData.AddClient(new Client(recID, userLogin));
+                    Dispatcher.Invoke(() => Clients_AddNewClient(new Client_ChatUser(recID, userLogin)));
                 }
                 catch (Exception ex)
                 {
@@ -131,7 +125,7 @@ namespace Client_WPF.Windows
             {
                 try
                 {
-                    if (!ClData.RemoveClient(recID))
+                    if (!Dispatcher.Invoke(() => Clients_RemoveClient(recID)))
                     {
                         MessageBox.Show("Ошибка при удалении клиента с ID - " + recID + ". ", "Произошла ошибка.");
                     }
@@ -144,6 +138,16 @@ namespace Client_WPF.Windows
             }
         }
 
+        private void Clients_AddNewClient(Client_ChatUser user)
+        {
+            ClData.AddClient(user);
+        }
+
+        private bool Clients_RemoveClient(ushort recID)
+        {
+            return ClData.RemoveClient(recID);
+        }
+
         private void LB_Main_Chats_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var index = LB_Main_Chats.SelectedIndex;
@@ -153,6 +157,8 @@ namespace Client_WPF.Windows
                 if (client != null)
                 {
                     LB_Main_Messages.ItemsSource = client.Messages;
+                    TB_Message.IsEnabled = true;
+                    B_Message_Send.IsEnabled = true;
                 }
             }
             catch (Exception ex)
@@ -200,14 +206,14 @@ namespace Client_WPF.Windows
 
     public class ClientsData
     {
-        public ObservableCollection<Client> Clients { get; set; } = new ObservableCollection<Client>();
+        public ObservableCollection<Client_ChatUser> Clients { get; set; } = new ObservableCollection<Client_ChatUser>();
 
         public ClientsData ()
         {
-            Clients = new ObservableCollection<Client>();
+            Clients = new ObservableCollection<Client_ChatUser>();
         }
 
-        public void AddClient(Client client)
+        public void AddClient(Client_ChatUser client)
         {
             if (FindClientWithID(client.ClientID) == null)
             {
@@ -228,11 +234,11 @@ namespace Client_WPF.Windows
                 throw new Exception("Пользователь с ID " + clID + "не был найден.");
         }
 
-        public Client FindClientWithID(ushort clID)
+        public Client_ChatUser FindClientWithID(ushort clID)
         {
             if (Clients == null)
             {
-                Clients = new ObservableCollection<Client>();
+                Clients = new ObservableCollection<Client_ChatUser>();
             }
             if (Clients.Count == 0)
                 return null;
@@ -248,7 +254,7 @@ namespace Client_WPF.Windows
             }
         }
 
-        public Client FindClientWithIndex(int index)
+        public Client_ChatUser FindClientWithIndex(int index)
         {
             if (index < Clients.Count)
             {
@@ -315,163 +321,6 @@ namespace Client_WPF.Windows
         {
             return IP + ":" + Port;
         }
-
-    }
-
-    public class AppNetwork
-    {
-        const int StreamCapacity = 1024;
-
-        public delegate void NetworkStatusChanged(ServerStatus status, IPNetData data);
-
-        public event NetworkStatusChanged OnNetworkStatusChanged;
-
-        public delegate void ClientStatusChanged(ushort recID, string userLogin, ClientStatus status);
-
-        public event ClientStatusChanged OnClientStatusChanged;
-
-        public delegate void ClientReceivedMessage(ushort recepientID, ushort receiverID, string message);
-
-        public event ClientReceivedMessage OnClientReceivedMessage;
-
-        private TcpClient SocketClient { get; set; } = new TcpClient();
-
-        public IPNetData MainData { get; set; }
-
-        public bool? IsConnected
-        {
-            get
-            {
-                if (MainData == null || SocketClient == null)
-                    return null;
-                return
-                    SocketClient?.Connected;
-            }
-        }
-
-        public bool IsEmpty 
-        { 
-            get
-            {
-                if (MainData == null)
-                    return true;
-                return MainData.IsEmpty;
-            } 
-        }
-
-        public AppNetwork()
-        {
-                
-        }
-
-        MemoryStream MemStream = null;
-
-        private AppNetwork(IPNetData data)
-        {
-            MainData = data;
-            //OpenSocketWithData(userName);
-        }
-
-        private AppNetwork(string ipPort)
-        {
-            MainData = new IPNetData(ipPort);
-            //OpenSocketWithData(userName);
-        }
-
-        private AppNetwork(string ip, ushort port)
-        {
-            MainData = new IPNetData(ip, port);
-            //OpenSocketWithData(userName);
-        }
-
-        public async Task OpenSocketWithData(string userName)
-        { 
-            if (IsConnected.HasValue && !IsConnected.Value)
-            {
-                //OnNetworkStatusChanged?.Invoke(ServerStatus.TryToConnect, MainData);
-                SocketClient.BeginConnect(IPAddress.Parse(MainData.IP), (int) MainData.Port, new AsyncCallback(ConnectCallback), userName);
-            }
-        }
-
-        private async void ConnectCallback(IAsyncResult ar)
-        {
-            try
-            {
-                SocketClient.EndConnect(ar);
-                var userName = (string)ar.AsyncState;
-                SendOperationInfo(CodeOperations.Connect, userName);
-                MemStream = new MemoryStream(new byte[StreamCapacity], 0, StreamCapacity, true, true);
-                OnNetworkStatusChanged?.Invoke(ServerStatus.Connected, MainData);
-                StartReceive(ar);
-            }
-            catch (Exception ex)
-            {
-                DisconnectClient(ex);
-            }
-        }
-
-        private void SendOperationInfo(CodeOperations operation, object netdata)
-        {
-            var nd = new NetData()
-            {
-                CodeOperation = operation,
-                Data = netdata
-            };
-            string val = JsonConvert.SerializeObject(nd);
-            try
-            {
-                SocketClient.Client.Send(Encoding.Default.GetBytes(val));
-            }
-            catch (Exception ex)
-            {
-                DisconnectClient(ex);
-            }
-        }
-
-        public void DisconnectClient(Exception ex = null)
-        {
-            if (ex != null)
-                OnNetworkStatusChanged?.Invoke(ServerStatus.Aborted, MainData);
-            else
-                OnNetworkStatusChanged?.Invoke(ServerStatus.Disconnected, MainData);
-            SocketClient?.Dispose();
-        }
-
-        private void StartReceive(IAsyncResult ar)
-        {
-            SocketClient.Client.BeginReceive(MemStream.GetBuffer(), 0, MemStream.GetBuffer().Length, SocketFlags.None, out SocketError sockErr, new AsyncCallback(ReceivedData), ar.AsyncState);
-        }
-
-        private void ReceivedData(IAsyncResult ar)
-        {
-            try
-            {
-                TcpClient connect = (TcpClient)ar.AsyncState;
-                int bytesRead = connect.Client.EndReceive(ar, out SocketError errorcode);
-                if (bytesRead > 0 && errorcode == SocketError.Success)
-                {
-                    //StartReceive(ar);
-                }
-                else
-                    DisconnectClient();
-            }
-            catch  (Exception ex)
-            {
-                DisconnectClient(ex);
-            }
-            
-        }
-
-        public static AppNetwork OpenConnectionTo(IPNetData data, string userName)
-        {
-            return new AppNetwork(data);
-        }
-
-        public static AppNetwork OpenConnectionTo(string ipPort)
-        {
-            return new AppNetwork(ipPort);
-        }
-
 
     }
 

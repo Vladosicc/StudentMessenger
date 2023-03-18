@@ -1,27 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 
+using NetDataLibrary.NetworkData;
+
 namespace NetDataLibrary
 {
-    public class NetData
-    {
-        public CodeOperations CodeOperation { get; set; }
 
-        public object Data { get; set; }
-
-    }
-
-    public enum CodeOperations
-    {
-        Connect, SendMessage, LoadChat, Disconnect,
-        Undefined
-    }
-
-    public enum ClientStatus
-    {
-        Connected, Disconnected
-    }
-
-    public class Client
+    public class Client_ChatUser
     {
         public ushort ClientID { get; set; }
 
@@ -29,7 +13,7 @@ namespace NetDataLibrary
 
         public ObservableCollection<MessageData> Messages { get; set; }
 
-        public Client(ushort clID, string userName, ObservableCollection<MessageData> messages = null)
+        public Client_ChatUser(ushort clID, string userName, ObservableCollection<MessageData> messages = null)
         {
             ClientID = clID;
             UserName = userName;
@@ -58,14 +42,8 @@ namespace NetDataLibrary
 
     }
 
-    public class MessageData
-    {
-        public ushort RecepientID { get; set; }
 
-        public ushort ReceiverID { get; set; }
 
-        public string Message { get; set; }
-
-    }
 
 }
+
