@@ -56,6 +56,7 @@ namespace Client_WPF.Windows
                     case ServerStatus.Connected:
                         {
                             Title = "Мессенджер - Клиент (подключено). IP: " + data.ToString();
+                            UI_ConnectClient();
                             break;
                         }
                     case ServerStatus.TryToConnect:
@@ -66,11 +67,13 @@ namespace Client_WPF.Windows
                     case ServerStatus.Disconnected:
                         {
                             Title = "Мессенджер - Клиент (отключён). IP: " + data.ToString();
+                            UI_ConnectClient();
                             break;
                         }
                     case ServerStatus.Aborted:
                         {
                             Title = "Мессенджер - Клиент (оборвано). IP: " + data.ToString();
+                            UI_ConnectClient();
                             break;
                         }
                 }
@@ -84,7 +87,7 @@ namespace Client_WPF.Windows
 
         private void TryConnectToServer()
         {
-            if (Network.IsEmpty)
+            if (Network.IsConnected == null  || !Network.IsConnected.Value)
             {
                 Window_IPEntering w_Ip = new Window_IPEntering();
                 w_Ip.ShowDialog();
@@ -176,7 +179,23 @@ namespace Client_WPF.Windows
             Network.OnNetworkStatusChanged -= UI_NetStatusChanged;
             Network.OnClientStatusChanged -= Network_OnClientStatusChanged;
             Network.OnClientReceivedMessage -= Network_OnClientReceivedMessage;
+            UI_DisconnClient();
         }
+
+        private void UI_DisconnClient()
+        {
+            MI_Home_Server.IsEnabled = true;
+            MI_Server_ChangeServ.IsEnabled = true;
+            MI_Server_Disconnect.IsEnabled = false;
+        }
+
+        private void UI_ConnectClient()
+        {
+            //MI_Home_Server.IsEnabled = true;
+            MI_Server_ChangeServ.IsEnabled = true;
+            MI_Server_Disconnect.IsEnabled = true;
+        }
+
     }
 
     public class ClientsData
@@ -425,14 +444,22 @@ namespace Client_WPF.Windows
 
         private void ReceivedData(IAsyncResult ar)
         {
-            TcpClient connect = (TcpClient)ar.AsyncState;
-            int bytesRead = connect.Client.EndReceive(ar, out SocketError errorcode);
-            if (bytesRead > 0 && errorcode == SocketError.Success)
+            try
             {
-                //StartReceive(ar);
+                TcpClient connect = (TcpClient)ar.AsyncState;
+                int bytesRead = connect.Client.EndReceive(ar, out SocketError errorcode);
+                if (bytesRead > 0 && errorcode == SocketError.Success)
+                {
+                    //StartReceive(ar);
+                }
+                else
+                    DisconnectClient();
             }
-            else
-                DisconnectClient();
+            catch  (Exception ex)
+            {
+                DisconnectClient(ex);
+            }
+            
         }
 
         public static AppNetwork OpenConnectionTo(IPNetData data, string userName)

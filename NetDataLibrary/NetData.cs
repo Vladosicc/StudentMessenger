@@ -12,7 +12,8 @@ namespace NetDataLibrary
 
     public enum CodeOperations
     {
-        Connect, SendMessage, LoadChat, Disconnect
+        Connect, SendMessage, LoadChat, Disconnect,
+        Undefined
     }
 
     public enum ClientStatus

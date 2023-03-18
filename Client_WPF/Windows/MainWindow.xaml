@@ -16,8 +16,8 @@
         </ComboBox>
         <ListBox x:Name="LB_Main_Messages" Height="NaN" Margin="225,28,10,35" Width="NaN"/>
         <ListBox x:Name="LB_Main_Chats" Margin="10,60,580,35" Width="NaN" Height="NaN" SelectionChanged="LB_Main_Chats_SelectionChanged"/>
-        <Menu x:Name="M_MenuHome" HorizontalAlignment="Center" VerticalAlignment="Top" Height="22.5" Width="800">
-            <MenuItem x:Name="MI_Home_Server" Header="Сервер">
+        <Menu x:Name="M_MenuHome" HorizontalAlignment="Center" VerticalAlignment="Top" Height="22" Width="780">
+            <MenuItem x:Name="MI_Home_Server" Header="Сервер" HorizontalAlignment="Left" ScrollViewer.VerticalScrollBarVisibility="Disabled">
                 <MenuItem x:Name="MI_Server_Disconnect" Header="Отключиться" Click="MI_Server_Disconnect_Click"/>
                 <MenuItem x:Name="MI_Server_ChangeServ" Header="Сменить сервер" Click="MI_Server_ChangeServ_Click"/>
             </MenuItem>

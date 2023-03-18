@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Net.Http;
+using NetDataLibrary;
 
 namespace Server_Console
 {
@@ -84,16 +85,21 @@ namespace Server_Console
             byte[] TaskEndingSuccessfully = BitConverter.GetBytes(0);
             byte[] TaskError = BitConverter.GetBytes(-1);
 
-            TypeOperation typeOperation = TypeOperation.undef;
+            CodeOperations typeOperation = CodeOperations.Undefined;
 
             switch (typeOperation)
             {
+                case CodeOperations.Connect:
+                {
+
+                    break;
+                }
                 default:
-                    {
-                        s.Send(TaskError);
-                        s.Send(Encoding.Unicode.GetBytes("Undefined command"));
-                        return;
-                    }
+                {
+                    s.Send(TaskError);
+                    s.Send(Encoding.Unicode.GetBytes("Undefined command"));
+                    return;
+                }
 
             }
         }
