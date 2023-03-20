@@ -5,7 +5,7 @@ using NetDataLibrary.NetworkData;
 namespace NetDataLibrary
 {
 
-    public class Client_ChatUser
+    public class Client_ChatUser 
     {
         public ushort ClientID { get; set; }
 

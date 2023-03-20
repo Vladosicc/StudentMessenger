@@ -175,7 +175,6 @@ namespace Server_Console.UserData
                     };
                     byte[] req = JsonNetworkConvert.SerializeObjectToSend(nd);
                     SendDataToUser(user, req);
-                    
                 }
                 else
                 {

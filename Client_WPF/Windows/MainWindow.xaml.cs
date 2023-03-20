@@ -231,7 +231,7 @@ namespace Client_WPF.Windows
                 return Clients.Remove(client);
             }
             else
-                throw new Exception("Пользователь с ID " + clID + "не был найден.");
+                throw new Exception("Пользователь с ID " + clID + " не был найден.");
         }
 
         public Client_ChatUser FindClientWithID(ushort clID)
