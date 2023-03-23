@@ -45,5 +45,10 @@ namespace Server.Hubs
 
             await Clients.User(sender.Name).SendAsync("ReceiveMessages", messages);
         }
+
+        public async Task Send(string message, string userName)
+        {
+            await Clients.All.SendAsync("Receive", message, userName);
+        }
     }
 }

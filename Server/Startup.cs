@@ -1,4 +1,8 @@
-﻿using Server.Services;
+﻿using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.EntityFrameworkCore;
+using Server.DbContexts;
+using Server.Hubs;
+using Server.Services;
 using System.Text.Json.Serialization;
 
 namespace Server
@@ -17,6 +21,12 @@ namespace Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.EnableDetailedErrors = true;
+                hubOptions.KeepAliveInterval = System.TimeSpan.FromMinutes(1);
+            });
+
             services.AddDistributedMemoryCache();
 
             //Использование сессии
@@ -27,14 +37,24 @@ namespace Server
                 options.Cookie.IsEssential = true;
             });
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .WithOrigins("https://localhost:44322")
+                        .AllowCredentials();
+                });
+            });
+
             //Использование кук
             services.ConfigureApplicationCookie(configure => configure.Cookie.Expiration = TimeSpan.FromDays(14));
-            
+
             //Подключение к бд
-            //DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
-            //services.AddDbContext<AutoDataContext>(options => options.UseLazyLoadingProxies().UseMySql(configurationRoot.GetConnectionString("DefaultConnection"),
-                //ServerVersion.AutoDetect(configurationRoot.GetConnectionString("DefaultConnection"))));
-            
+            DbContextOptionsBuilder optionsBuilder = new DbContextOptionsBuilder();
+            services.AddDbContext<MessangerDataContext>(options => options.UseSqlite(configurationRoot.GetConnectionString("DefaultConnection")));
+
             services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -58,6 +78,9 @@ namespace Server
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+
+            app.UseCors();
+
             app.UseStaticFiles();
 
             app.UseWebSockets();
@@ -67,6 +90,18 @@ namespace Server
             app.UseAuthorization();
 
             app.UseSession();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<ChatHub>("/chat",
+                    options =>
+                    {
+                        options.ApplicationMaxBufferSize = 64;
+                        options.TransportMaxBufferSize = 64;
+                        options.LongPolling.PollTimeout = System.TimeSpan.FromMinutes(1);
+                        options.Transports = HttpTransportType.LongPolling | HttpTransportType.WebSockets;
+                    });
+            });
 
             app.UseEndpoints(endpoints =>
             {
