@@ -201,7 +201,6 @@ namespace Client_WPF.Windows
             MI_Server_ChangeServ.IsEnabled = true;
             MI_Server_Disconnect.IsEnabled = true;
         }
-
     }
 
     public class ClientsData
