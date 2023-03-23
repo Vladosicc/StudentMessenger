@@ -1,41 +1,47 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Client.MainPage">
-
-    <ScrollView>
-        <VerticalStackLayout
-            Spacing="25"
-            Padding="30,0"
-            VerticalOptions="Center">
-
-            <Image
-                Source="dotnet_bot.png"
-                SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                HeightRequest="200"
-                HorizontalOptions="Center" />
-
-            <Label
-                Text="Hello, World!"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="32"
-                HorizontalOptions="Center" />
-<Switch IsToggled="false" />
-            <Label
-                Text="Welcome to .NET Multi-platform App UI"
-                SemanticProperties.HeadingLevel="Level2"
-                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
-                FontSize="18"
-                HorizontalOptions="Center" />
-
-            <Button
-                x:Name="CounterBtn"
-                Text="Click me"
-                SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
-                HorizontalOptions="Center" />
-
-        </VerticalStackLayout>
-    </ScrollView>
-
+             x:Class="Client.MainPage"
+             Title="MainPage">
+    <VerticalStackLayout>
+        <Label 
+            Text="Добро пожаловать на сервер: !"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+        <Label
+            Text="IP сервера: "
+        />
+        <Entry x:Name="TB_IPInput"
+            Placeholder="Введите IP: "
+            Text=""
+         />
+        <Button x:Name="B_ConnectToServer"
+            Text="Подключиться.. "
+            Clicked="B_ConnectToServer_Clicked"
+            />
+        <Label 
+            Text="Логин: "
+        />
+        <Entry x:Name="TB_LoginInput"
+            Placeholder="Введите логин: "
+            Text=""
+            IsEnabled="False"
+        />
+        <Label 
+            Text="Сообщение: "
+        />
+        <Editor x:Name="TB_MessageInput"
+            Placeholder="Введите сообщение: "
+            Text=""
+            HeightRequest="100"
+            IsEnabled="False"
+        />
+        <Button x:Name="B_SendMessage"
+            Text="Отправить"
+            Clicked="B_SendMessage_Clicked"
+            IsEnabled="False"
+        />
+        <Label x:Name="L_ErrorsData"
+        />
+    </VerticalStackLayout>
 </ContentPage>
